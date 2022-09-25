@@ -1,6 +1,6 @@
 [package]
 name = "vconvert"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["ev <luna@aixeria.com>"]
 description = "A simple vulnus to soundspace converter (or vice versa)"
@@ -12,3 +12,6 @@ license = "MIT"
 [dependencies]
 serde = {version =  "1.0.145", features = ["derive"]}
 serde_json = "1.0.85"
+
+[[example]]
+name = "vul-to-ss"
