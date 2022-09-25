@@ -32,9 +32,31 @@ async fn ss_to_vulnus_local<R:Runtime>(wind:Window<R>,paths: HashMap<String,Stri
     Ok(())
 }
 
+#[tauri::command]
+async fn ss_to_vulnus_remote<R:Runtime>(wind:Window<R>,path: String,export_to:PathBuf,meta: vconvert::vulnus::MetaData) -> Result<(),ConvertError> {
+
+    let resp = reqwest::get(path).await.or_else(|x| Err(ConvertError::HttpError(x.to_string())))?;
+
+    let data = resp.text().await.or_else(|x| Err(ConvertError::HttpError(x.to_string())))?;
+
+    let ss_map = vconvert::soundspace::Map::from_str(&data).or_else(|x| Err(ConvertError::ParseError(x.to_string())))?;
+    let vul_map : vconvert::vulnus::Map = ss_map.into();
+
+    let map_f = File::create(export_to.join(format!("{}.json",meta.get_difficulties().first().unwrap()))).or_else(|x| Err(ConvertError::IoError(x.to_string())))?;
+    serde_json::to_writer(map_f, &vul_map).or_else(|x| Err(ConvertError::SerdeSerError(x.to_string())))?;
+
+
+    let meta_f = File::create(export_to.join("meta.json")).or_else(|x| Err(ConvertError::IoError(x.to_string())))?;
+
+    serde_json::to_writer(meta_f, &meta).or_else(|x| Err(ConvertError::SerdeSerError(x.to_string())))?;
+
+    Ok(())
+}
+
 #[derive(Debug,Serialize,Deserialize)]
 enum ConvertError {
     IoError(String),
+    HttpError(String),
     ParseError(String),
     SerdeSerError(String),
     Unknown
@@ -42,7 +64,7 @@ enum ConvertError {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![ss_to_vulnus_local])
+        .invoke_handler(tauri::generate_handler![ss_to_vulnus_local,ss_to_vulnus_remote])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 500,
         "resizable": true,
         "title": "vconvert ui",
-        "width": 1000
+        "width": 700
       }
     ]
   }

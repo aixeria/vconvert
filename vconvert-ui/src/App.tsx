@@ -8,7 +8,7 @@ function App() {
   return (
     <div class="">
       <Nav/>
-      <div class="px-5" >
+      <div class="px-5 pb-2" >
 
         <Routes>
           <Route path="/" component={Info} />

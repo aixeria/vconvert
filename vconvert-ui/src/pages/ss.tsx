@@ -22,6 +22,7 @@ export default function ss() {
 
 
     let [artist, set_artist] = createSignal<string>("");
+    let [http_url, set_http_url] = createSignal<string>("");
     let [title, set_title] = createSignal<string>("");
     let [ptodif, set_ptodif] = createSignal<{[x:string]:string}>({});
     let [mappers, set_mappers] = createSignal<string[]>([]);
@@ -39,7 +40,7 @@ export default function ss() {
 		}
 		let top : {[x:string]:string} = {};
         for (let p of ret) {
-            top[p] = "";
+            top[p] = p.slice(p.lastIndexOf(sep)+1,p.lastIndexOf("."));
         }
 		set_ptodif(top);
 	};
@@ -63,24 +64,45 @@ export default function ss() {
 			return;
 		}
 
+        let hu = http_url();
+        let pog = hu.lastIndexOf("/")+1;
+        let nam = hu.slice(pog);
+        let qe = nam.lastIndexOf(".",pog);
+
+        let diff = hof() === true ? [nam.slice(0, qe === -1 ? undefined : qe)] : Object.values(ptodif())
+
         let metadata: metadata = {
             _title: title(),
             _artist: artist(),
-            _difficulties: Object.values(ptodif()),
+            _difficulties: diff,
             _mappers: mappers(),
             _version: 1,
             _music: "song.mp3",
         }
 
-		invoke("ss_to_vulnus_local", {
-			paths: ptodif(),
-			exportTo: export_location(),
-            meta: metadata,
-		}).then(()=>{
-            navigate("/");
-        },e=>{
-            console.log(e);
-        })
+        if (hof() === true) {
+            invoke("ss_to_vulnus_remote", {
+                path: hu,
+                exportTo: export_location(),
+                meta: metadata,
+            }).then(()=>{
+                navigate("/");
+            },e=>{
+                console.log(e);
+            })
+        }
+        else {
+
+            invoke("ss_to_vulnus_local", {
+                paths: ptodif(),
+                exportTo: export_location(),
+                meta: metadata,
+            }).then(()=>{
+                navigate("/");
+            },e=>{
+                console.log(e);
+            })
+        }
 	};
 
     let handle_new_mapper = (v: {
@@ -125,7 +147,22 @@ export default function ss() {
             </form>
 
             <Switch>
-                <Match when={hof() === true}>{/* http */}</Match>
+                <Match when={hof() === true}>
+                    {/* http */}
+                    <h1 class="text-2xl">Remote Map</h1>
+                    <div class="mx-2" >
+
+                        <label class="block text-neutral-500" for="http">
+                                URL
+                        </label>
+                        <input
+                            oninput={v=>set_http_url(v.currentTarget.value)}
+                            placeholder={"HTTP url of map"}
+                            class="appearance-none flex-1 w-full text-neutral-500 placeholder-zinc-400 transition-colors bg-neutral-900 focus:outline-none border-neutral-600 focus:ring-pink-400 focus:border-pink-400 focus:ring-1 rounded-lg px-2 py-1 shadow-sm border"
+                            id="http"
+                        />
+                    </div>
+                    </Match>
                 <Match when={hof() === false}>
                     {/* file */}
 
@@ -137,33 +174,33 @@ export default function ss() {
                     >
                         Open file selector
                     </button>
+                    <Show when={Object.keys(ptodif()).length > 0 } >
+                        <h1 class="text-2xl">Difficulty Mapper</h1>
+
+                        <div class="mx-2 bg-neutral-800 my-2 rounded-lg space-y-2 p-2" >
+                            <For each={ Object.entries(ptodif()) }  >{(pd)=>
+                            <>
+                            <div class="flex space-x-2" >
+                                <input
+                                    readOnly={true}
+                                    value={pd[0].slice(pd[0].lastIndexOf(sep)+1)}
+                                    class="appearance-none flex-1 text-neutral-500 placeholder-zinc-400 transition-colors bg-neutral-900 focus:outline-none border-neutral-600 focus:ring-pink-400 focus:border-pink-400 focus:ring-1 rounded-lg px-2 py-1 shadow-sm border"
+                                />
+                                <input
+                                    value={pd[1]}
+                                    onFocusOut={(e) => {
+                                        set_ptodif(old=>{
+                                            return {...old,[pd[0]]:(e.target as any).value}
+                                        })
+                                    } }
+                                    class="appearance-none flex-[.4] text-neutral-500 placeholder-zinc-400 transition-colors bg-neutral-900 focus:outline-none border-neutral-600 focus:ring-pink-400 focus:border-pink-400 focus:ring-1 rounded-lg px-2 py-1 shadow-sm border"
+                                />
+                            </div>
+                            </>}</For>
+                        </div>
+                    </Show>
                 </Match>
             </Switch>
-            <Show when={Object.keys(ptodif()).length > 0 } >
-                <h1 class="text-2xl">Difficulty Mapper</h1>
-
-                <div class="mx-2 bg-neutral-800 rounded-lg p-2" >
-                    <For each={ Object.entries(ptodif()) }  >{(pd)=>
-                    <>
-                    <div class="flex space-x-2" >
-                        <input
-                            readOnly={true}
-                            value={pd[0].slice(pd[0].lastIndexOf(sep)+1)}
-                            class="appearance-none flex-1 text-neutral-500 placeholder-zinc-400 transition-colors bg-neutral-900 focus:outline-none border-neutral-600 focus:ring-pink-400 focus:border-pink-400 focus:ring-1 rounded-lg px-2 py-1 shadow-sm border"
-                        />
-                        <input
-                            value={pd[1]}
-                            onFocusOut={(e) => {
-                                set_ptodif(old=>{
-                                    return {...old,[pd[0]]:(e.target as any).value}
-                                })
-                            } }
-                            class="appearance-none flex-[.4] text-neutral-500 placeholder-zinc-400 transition-colors bg-neutral-900 focus:outline-none border-neutral-600 focus:ring-pink-400 focus:border-pink-400 focus:ring-1 rounded-lg px-2 py-1 shadow-sm border"
-                        />
-                    </div>
-                    </>}</For>
-                </div>
-            </Show>
 
             <h1 class="text-2xl">Meta data</h1>
             <div class="mx-2">
