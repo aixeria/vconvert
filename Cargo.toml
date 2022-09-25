@@ -13,5 +13,10 @@ license = "MIT"
 serde = {version =  "1.0.145", features = ["derive"]}
 serde_json = "1.0.85"
 
+[workspace]
+members = [
+    "./vconvert-ui/src-tauri",
+]
+
 [[example]]
 name = "vul-to-ss"

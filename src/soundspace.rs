@@ -1,4 +1,4 @@
-use std::{time::Duration, str::FromStr};
+use std::{time::Duration, str::FromStr, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +14,16 @@ pub enum ParseSoundSpaceMapErr {
     InvalidSyntax,
     UnknownFailure
 }
+
+impl Display for ParseSoundSpaceMapErr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseSoundSpaceMapErr::InvalidSyntax => write!(f, "Invalid Syntax"),
+            ParseSoundSpaceMapErr::UnknownFailure => write!(f, "Unknown Failure")
+        }
+    }
+}
+
 
 impl FromStr for Map {
     type Err = ParseSoundSpaceMapErr;

@@ -2,3 +2,4 @@ target/
 ssmap-out.txt
 vmap-out.json
 vmap.json
+vconvert-ui/node_modules
