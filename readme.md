@@ -23,5 +23,10 @@ fn main() {
 }
 ```
 
+# vconvert-ui
+VConvert-ui is a ui version of this tool, which allows novices of the command line to instead use a gui built with tauri.
+## images
+![](https://i.imgur.com/ShXjssR.png)
+![](https://i.imgur.com/igejuh7.png)
 # examples
 There are some examples in the [examples](./examples/) folder.
